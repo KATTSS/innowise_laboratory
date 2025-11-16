@@ -4,10 +4,11 @@ def main():
     birth_year_str = ask_birth_year()
     birth_year = int(birth_year_str)
     current_age=current_year-birth_year
+    hobbies = []
     hobbies = ask_hobbies()
     life_stage = generate_profile(current_age)
-    profile_summary = {"Name" : user_name,"Age" : current_age,"Life stage" : life_stage,"Hobbies" : hobbies}
-    print_profile(profile_summary)
+    user_profile = {"Name" : user_name,"Age" : current_age,"Life stage" : life_stage,"Hobbies" : hobbies}
+    print_profile(user_profile)
 
 def ask_user_name():
     user_name = input("Enter your full name: ")
