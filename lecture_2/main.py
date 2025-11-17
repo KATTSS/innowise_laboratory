@@ -1,4 +1,7 @@
+# Init current year constant
 current_year = 2025
+
+# Realisation of project logig
 def main():
     user_name = ask_user_name()
     birth_year_str = ask_birth_year()
@@ -10,12 +13,14 @@ def main():
     user_profile = {"Name" : user_name,"Age" : current_age,"Life stage" : life_stage,"Hobbies" : hobbies}
     print_profile(user_profile)
 
+# Get user_name
 def ask_user_name():
     user_name = input("Enter your full name: ")
     while not user_name:
         user_name = input("Enter your full name: ")
     return user_name
 
+# Count user's life stage
 def generate_profile(age):
     if age >= 20:
         return "Adult"
@@ -24,6 +29,7 @@ def generate_profile(age):
     else :
         return "Child"
 
+# Get user's list of hobbies
 def ask_hobbies():
     hobbies_list = []
     while True:
@@ -35,12 +41,14 @@ def ask_hobbies():
         hobbies_list.append(hobbies_str)
     return hobbies_list
 
+# Get user's birth date(year)
 def ask_birth_year():
     birth_year_str = int(input("Enter your birth year: "))
     while birth_year_str > current_year:
         birth_year_str = int(input("Enter your birth year: "))
     return birth_year_str
 
+# Print profile summary in console
 def print_profile(profile):
     print("---")
     for key, value in profile.items():
@@ -56,4 +64,5 @@ def print_profile(profile):
         print(f"{key}: {value}")
     print("---")
 
+# Call main function
 main()
