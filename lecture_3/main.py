@@ -1,6 +1,4 @@
 # Project realisation file
-from csv import excel
-
 
 # Class for custom exceptions
 class MyException(Exception):
@@ -8,11 +6,11 @@ class MyException(Exception):
 
 # Manager class for students and their grades
 class GradeManager:
+
     # Global grade manager parameters
     max_average = 0.0
-    min_average = 0.0
+    min_average = float('inf')
     overall_average = 0.0
-
 
     def __init__(self):
         self.students = []
@@ -24,29 +22,41 @@ class GradeManager:
 
         self.students.append({"name" : name, "grades" : []})
 
+    # Student's existence verification
+    def verifyExistence(self, name):
+        if not self.__findStudent(name):
+            return False
+        return True
+
+    # Get student from the list
+    def __findStudent(self, name):
+        for student in self.students:
+            if student['name'] == name:
+                return student
+        return None
+
     # Add grades list to a concrete student grade list, add their average grade to statistics
     def addGrade(self, name, grade):
-
-        if name not in self.students:
+        student = self.__findStudent(name)
+        if not student:
             raise MyException("Student does not exist")
 
         if not grade:
             raise MyException("Grade cannot be empty")
 
-        for i, student in enumerate(self.students):
-            if student['name'] == name:
-                student_index = i
-                break
+        student["grades"].extend(grade)
 
-        for i in grade:
-            self.students[student_index]["grades"].append(i)
-        average_grade=self.__countStudentAverage(grade)
+        try:
+            average_grade=self.__countStudentAverage(grade)
+        except MyException:
+            raise MyException("Grade list is empty")
 
         if average_grade>self.max_average:
             self.max_average=average_grade
-        elif average_grade<self.min_average:
+        if average_grade<self.min_average:
             self.min_average=average_grade
-        self.__addToOverallAverage(average_grade)
+
+        self.__updateOverallAverage()
 
     # Count student average grade method
     def __countStudentAverage(self, grade):
@@ -55,22 +65,35 @@ class GradeManager:
         return sum(grade)/len(grade)
 
     # Update overall average grade method
-    def __addToOverallAverage(self, grade):
-        self.overall_average+=grade
-        self.overall_average/=2
+    def __updateOverallAverage(self):
+        if not self.students:
+            self.overall_average = 0.0
+            return
+
+        total = 0
+        count = 0
+        for student in self.students:
+            if student['grades']:
+                total += sum(student['grades']) / len(student['grades'])
+                count += 1
+
+        self.overall_average = total / count if count > 0 else 0.0
 
     # Get grade manager statistics method
     def showReport(self):
         if not self.students:
             raise MyException("No students for statistics")
+
         print("---Student Report---")
+
         for student in self.students:
             try:
                 average=self.__countStudentAverage(student['grades'])
             except MyException:
                 print(f"{student['name']}'s average grade is N/A.")
                 continue
-            print(f"{student['name']}'s average grade is {average}")
+            print(f"{student['name']}'s average grade is {round(average, 1)}")
+
         print("--------------------")
         print(f"Max Average: {self.max_average}")
         print(f"Min Average: {self.min_average}")
@@ -102,3 +125,85 @@ class GradeManager:
 
         except ValueError:
             print("No students with grades available.")
+
+
+def printMenu():
+    print("--- Student grade analyzer ---")
+    print("1. Add a new student")
+    print("2. Add grades for a student")
+    print("3. Generate a full report")
+    print("4. Find the top student")
+    print("5. Exit program")
+
+def getMenuOption():
+    option_str=input("Enter your choice: ")
+    while not option_str.isdigit() or int(option_str) not in range(1,6):
+        print("Invalid input. Enter a number from 1 to 5")
+        option_str = input("Enter your choice: ")
+    return int(option_str)
+
+# Get new student name from user
+def getName():
+    option_str=input("Enter student name: ")
+    while not option_str.isalpha() or len(option_str) < 1:
+        print("Invalid input. A name should consist of letters")
+        option_str = input("Enter student name: ")
+    return option_str.title()
+
+# Get grades list for user
+def getGrades():
+    grades = []
+    while True:
+        option_str = input("Enter a grade (or 'done' to finish): ")
+        if option_str.lower() == "done":
+            return grades
+        elif not option_str.isdigit() or int(option_str) not in range(1,101):
+            print("Invalid input. Enter a number in range 1-100 or 'done' to finish")
+            continue
+        grades.append(int(option_str))
+
+# Realisation of project main logic
+def main():
+    grade_manager = GradeManager()
+
+    while True:
+        printMenu()
+        menu_option=getMenuOption()
+
+        if menu_option == 1:
+            name = getName()
+            try:
+               grade_manager.addStudent(name)
+            except MyException:
+                print(f"Student {name} already exists")
+            except Exception:
+                print("Error, please try again")
+
+        elif menu_option == 2:
+            name = getName()
+            if not grade_manager.verifyExistence(name):
+                print(f"No student {name} was found")
+                continue
+            grades_to_add = getGrades()
+            try:
+                grade_manager.addGrade(name, grades_to_add)
+            except MyException:
+                print(f"The grade list is empty or no student {name} was found")
+            except Exception:
+                print("Error, please try again")
+
+        elif menu_option == 3:
+            try:
+                grade_manager.showReport()
+            except MyException:
+                print("No students added yet.")
+            except Exception:
+                print("Error, please try again")
+
+        elif menu_option == 4:
+            grade_manager.findTopPerformer()
+
+        else:
+            break
+
+main()
